@@ -78,7 +78,7 @@ def replace_template_lang(langs, code):
     for lang in langs:
         pass
         quote_template = "\Bitrix\Main\Localization\Loc::getMessage(\"{}\")"
-        text_template = "<? \Bitrix\Main\Localization\Loc::getMessage(\"{}\") ?>"
+        text_template = "<?= \Bitrix\Main\Localization\Loc::getMessage(\"{}\") ?>"
         code = code.replace("\"" + lang['message'] + "\"",  quote_template.format(lang['code']))
         code = code.replace("\'" + lang['message'] + "\'", quote_template.format(lang['code']))
         code = code.replace(lang['message'], text_template.format(lang['code']))
