@@ -1,4 +1,5 @@
 #!/usr/bin/python3.5
+
 import os
 import re
 import sys
@@ -7,15 +8,9 @@ from gi.module import maketrans
 
 component = sys.argv[-1]
 
-isTemplate = '-t' in sys.argv
-
-# TODO запятые, точки, английский. Искать в тегах и в кавычках, многострочно.
-# TODO проверка ланг-файлов на уникальность.
-# TODO укорачивание названий.
-# TODO Если файл уже существует, то просто дописываем в него
 charMap = maketrans(
-    'йцукенгшщзхъфывапролджэячсмитьбюё,. ',
-    'ICUKENGSSZHBFYWAPROLDZEYCSMITPBUE___'
+    'йцукенгшщзхъфывапролджэячсмитьбюё ',
+    'ICUKENGSSZHBFYWAPROLDZEYCSMITPBUE_'
 )
 
 component_map = (
@@ -32,6 +27,11 @@ template_map = (
 )
 
 
+def generate_symbol_code(file_name, message):
+    code = file_name.upper().replace('.', '') + '_' + message.replace(r'[^а-яА-Я0-9\s]', '').lower().translate(charMap)
+    return code
+
+
 def create_lang_file(directory, name, messages):
     lang_dir = directory + 'lang/ru/'
     lang_template = '$MESS["{}"] = "{}";\n'
@@ -46,7 +46,7 @@ def create_lang_file(directory, name, messages):
     langs = []
     for message in messages:
         lang_o = {
-            'code': name.upper().replace('.', '') + '_' + message.lower().translate(charMap),
+            'code': generate_symbol_code(name, message),
             'message': message,
         }
 
@@ -60,7 +60,9 @@ def create_lang_file(directory, name, messages):
 
 
 def find_lang(code):
-    return re.findall(r'[а-яА-Я]+[\s,().-_а-яА-Я]+', code)
+    message = re.findall(r'[а-яА-Я]+[\s,().-_а-яА-Я]+[.,а-яА-Я]', code)
+    print(message)
+    return message
 
 
 def replace_component_lang(langs, code):
@@ -76,7 +78,6 @@ def replace_component_lang(langs, code):
 
 def replace_template_lang(langs, code):
     for lang in langs:
-        pass
         quote_template = "\Bitrix\Main\Localization\Loc::getMessage(\"{}\")"
         text_template = "<?= \Bitrix\Main\Localization\Loc::getMessage(\"{}\") ?>"
         code = code.replace("\"" + lang['message'] + "\"",  quote_template.format(lang['code']))
